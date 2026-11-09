@@ -46,19 +46,18 @@ const authMiddleware = (req, res, next) => {
   const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
   const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
 
-  // YAHAN APNA USERNAME AUR PASSWORD SET KAREIN
-  const ADMIN_USER = 'Ryan';       // Aap apna username badal sakte hain
-  const ADMIN_PASS = '2026RyanTime';  // Aap apna strong password yahan set karein
+  const ADMIN_USER = 'Ryan';       
+  const ADMIN_PASS = '2026RyanTime';  
 
   if (username === ADMIN_USER && password === ADMIN_PASS) {
-    return next(); // Password sahi hai, aage badho
+    return next();
   }
 
   res.set('WWW-Authenticate', 'Basic realm="NetAiry Admin Protected Area"');
-  res.status(401).send('Authentication required. (Galat password ya cancel kiya gaya)');
+  res.status(401).send('Authentication required.');
 };
 
-// 2. Protected Secret Admin Panel Route (Password Required)
+// 2. Protected Admin Panel Route
 app.get('/netairy-secret-admin-999', authMiddleware, (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -71,11 +70,11 @@ app.get('/netairy-secret-admin-999', authMiddleware, (req, res) => {
     </head>
     <body class="bg-slate-950 text-slate-100 p-6 flex justify-center">
         <div class="w-full max-w-lg bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl my-6">
-            <h1 class="text-2xl font-bold text-amber-400 mb-2 text-center">NetAiry Admin Panel</h1>
-            <p class="text-xs text-slate-400 text-center mb-6">🔒 Secure Mode Active: Authorized Access Only</p>
+            <h1 class="text-2xl font-bold text-amber-400 mb-2 text-center">NetAiry Admin & Update Panel</h1>
+            <p class="text-xs text-slate-400 text-center mb-6">Naya client banane ke liye ya purane client ka data update karne ke liye same Slug daalein.</p>
             <form action="/netairy-secret-admin-999/add" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase text-slate-400 mb-1">Unique Slug (e.g. netairy)</label>
+                    <label class="block text-xs uppercase text-amber-400 font-bold mb-1">Unique Slug (e.g. netairy - Update ke liye purana slug hi daalein)</label>
                     <input type="text" name="slug" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-amber-400" placeholder="chote aksharo me">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -147,7 +146,7 @@ app.get('/netairy-secret-admin-999', authMiddleware, (req, res) => {
                     <input type="text" name="avatar" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-amber-400" placeholder="https://images.unsplash.com/...">
                 </div>
 
-                <!-- Product Gallery Photos (Optional) -->
+                <!-- Product Gallery Photos -->
                 <div class="border-t border-slate-800 pt-4 mt-4">
                     <label class="block text-xs uppercase text-amber-400 font-bold mb-2">Product Gallery Photos (Optional)</label>
                     <div class="space-y-2">
@@ -162,7 +161,7 @@ app.get('/netairy-secret-admin-999', authMiddleware, (req, res) => {
                     <label class="block text-xs uppercase text-slate-400 mb-1 mt-3">Bio / Description</label>
                     <textarea name="bio" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-amber-400"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-lg transition shadow-lg mt-4">Save & Create Profile</button>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-lg transition shadow-lg mt-4">Save / Update Profile</button>
             </form>
         </div>
     </body>
@@ -170,22 +169,23 @@ app.get('/netairy-secret-admin-999', authMiddleware, (req, res) => {
   `);
 });
 
-// Handle Admin Form Submission (Protected with Auth too)
+// Handle Add or Update (UPSERT Logic: Agar slug pehle se hai toh update hoga, naya hai toh insert hoga)
 app.post('/netairy-secret-admin-999/add', authMiddleware, (req, res) => {
   let { slug, name, title, business, phone, whatsapp, email, website, bio, avatar, instagram, facebook, linkedin, youtube, amazon, meesho, google, photo1, photo2, photo3, photo4 } = req.body;
   slug = slug.trim().toLowerCase();
 
-  const query = `INSERT INTO clients (slug, name, title, business, phone, whatsapp, email, website, bio, avatar, instagram, facebook, linkedin, youtube, amazon, meesho, google, photo1, photo2, photo3, photo4) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  // SQLite UPSERT Query: REPLACE INTO agar slug match hua toh purana data hata kar naya daal dega
+  const query = `REPLACE INTO clients (slug, name, title, business, phone, whatsapp, email, website, bio, avatar, instagram, facebook, linkedin, youtube, amazon, meesho, google, photo1, photo2, photo3, photo4) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   
   db.run(query, [slug, name, title, business, phone, whatsapp, email, website, bio, avatar, instagram, facebook, linkedin, youtube, amazon, meesho, google, photo1, photo2, photo3, photo4], (err) => {
     if (err) {
-      return res.status(400).send('<body style="background:#030712; color:white; font-family:sans-serif; text-align:center; padding-top:50px;"><h1>Error: Slug already exists!</h1><br><a href="/netairy-secret-admin-999" style="color:#fbbf24;">Go Back</a></body>');
+      return res.status(400).send('<body style="background:#030712; color:white; font-family:sans-serif; text-align:center; padding-top:50px;"><h1>Error saving data!</h1><br><a href="/netairy-secret-admin-999" style="color:#fbbf24;">Go Back</a></body>');
     }
-    res.send(`<body style="background:#030712; color:white; font-family:sans-serif; text-align:center; padding-top:50px;"><h1 style="color:#22c55e;">Client Added Successfully!</h1><p>Profile Link to encode in NFC card: <a href="/${slug}" target="_blank" style="color:#fbbf24; font-size:1.2rem;">http://localhost:3000/${slug}</a></p><br><a href="/netairy-secret-admin-999" style="color:#fbbf24;">Add Another Client</a></body>`);
+    res.send(`<body style="background:#030712; color:white; font-family:sans-serif; text-align:center; padding-top:50px;"><h1 style="color:#22c55e;">Profile Saved / Updated Successfully!</h1><p>View Profile: <a href="/${slug}" target="_blank" style="color:#fbbf24; font-size:1.2rem;">/${slug}</a></p><br><a href="/netairy-secret-admin-999" style="color:#fbbf24;">Back to Admin Panel</a></body>`);
   });
 });
 
-// 3. Dynamic Profile Route (Publicly accessible for customers)
+// 3. Dynamic Profile Route
 app.get('/:slug', (req, res) => {
   const slug = req.params.slug.trim().toLowerCase();
   
