@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 mb-6">
     <div class="h-32 bg-indigo-600 bg-cover bg-center" style="background-image: url('<%= profile.banner || 'https://images.unsplash.com/photo-1557683316-973673baf926' %>');"></div>
     <div class="px-6 pb-6 text-center relative">
       <div class="relative -mt-16 mb-4 flex justify-center">
@@ -33,6 +33,22 @@
           <a href="<%= profile.website %>" target="_blank" class="flex items-center justify-center w-full bg-blue-600 text-white py-2.5 rounded-xl font-medium hover:bg-blue-700 transition">🌐 Visit Website</a>
         <% } %>
       </div>
+
+      <!-- PRODUCT GALLERY SECTION (Sirf tabhi dikhega jab photos hongi) -->
+      <% if (profile.gallery && profile.gallery.length > 0) { %>
+        <div class="mt-8 pt-6 border-t border-gray-100 text-left">
+          <h3 class="text-md font-bold text-gray-800 mb-3 text-center">✨ Featured Products & Services</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <% profile.gallery.forEach(imgUrl => { %>
+              <% if (imgUrl) { %>
+                <div class="overflow-hidden rounded-xl shadow-sm border border-gray-200 bg-gray-50">
+                  <img src="<%= imgUrl %>" alt="Product" class="w-full h-32 object-cover hover:scale-105 transition duration-300">
+                </div>
+              <% } %>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
 
       <div class="mt-8 text-xs text-gray-400">
         Powered by NetAiry Tech 🚀
