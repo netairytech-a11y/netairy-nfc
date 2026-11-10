@@ -104,25 +104,45 @@ app.get('/netairy-secret-admin-999/edit/:slug?', requireAuth, async (req, res) =
 
 app.post('/netairy-secret-admin-999/save', requireAuth, async (req, res) => {
   try {
-    const { 
+    let { 
       originalSlug, slug, name, title, company, phone, whatsapp, 
       email, website, address, bio, avatar, banner, 
       product1, product2, product3, 
       instagram, facebook, linkedin, youtube 
     } = req.body;
     
+    // Helper to ensure values are strings even if duplicate fields sent arrays
+    const cleanStr = (val) => Array.isArray(val) ? (val[0] || "") : (val || "");
+
     const gallery = [product1, product2, product3].filter(img => img && img.trim() !== "");
 
     const updateData = {
-      slug, name, title, company, phone, whatsapp, email, 
-      website, address, bio, avatar, banner, gallery, 
-      instagram, facebook, linkedin, youtube
+      slug: cleanStr(slug), 
+      name: cleanStr(name), 
+      title: cleanStr(title), 
+      company: cleanStr(company), 
+      phone: cleanStr(phone), 
+      whatsapp: cleanStr(whatsapp), 
+      email: cleanStr(email), 
+      website: cleanStr(website), 
+      address: cleanStr(address), 
+      bio: cleanStr(bio), 
+      avatar: cleanStr(avatar), 
+      banner: cleanStr(banner), 
+      gallery, 
+      instagram: cleanStr(instagram), 
+      facebook: cleanStr(facebook), 
+      linkedin: cleanStr(linkedin), 
+      youtube: cleanStr(youtube)
     };
 
-    if (originalSlug && originalSlug !== slug) {
-      await Profile.findOneAndUpdate({ slug: originalSlug }, updateData, { upsert: true, new: true });
+    const targetSlug = cleanStr(slug);
+    const origSlug = cleanStr(originalSlug);
+
+    if (origSlug && origSlug !== targetSlug) {
+      await Profile.findOneAndUpdate({ slug: origSlug }, updateData, { upsert: true, new: true });
     } else {
-      await Profile.findOneAndUpdate({ slug }, updateData, { upsert: true, new: true });
+      await Profile.findOneAndUpdate({ slug: targetSlug }, updateData, { upsert: true, new: true });
     }
 
     res.redirect('/netairy-secret-admin-999');
