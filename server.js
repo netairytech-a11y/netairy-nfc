@@ -6,7 +6,7 @@ const session = require('express-session');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB Connection (Render Environment variable se uthayega)
+// MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://netairytech_db_user:JhK62hQrDHRjSqvu@cluster0.3n35kvz.mongodb.net/netairy_nfc?retryWrites=true&w=majority";
 
 mongoose.connect(MONGO_URI)
@@ -27,6 +27,7 @@ const profileSchema = new mongoose.Schema({
   bio: String,
   avatar: String,
   banner: String,
+  gallery: [String], // <--- Yeh product photos ke liye hai
   facebook: String,
   instagram: String,
   linkedin: String,
@@ -60,12 +61,10 @@ const requireAuth = (req, res, next) => {
 
 // --- ROUTES ---
 
-// Admin Login Page (GET)
 app.get('/netairy-secret-admin-999/login', (req, res) => {
   res.render('admin-login', { error: null });
 });
 
-// Admin Login Action (POST)
 app.post('/netairy-secret-admin-999/login', (req, res) => {
   const { username, password } = req.body;
   if (username === 'Ryan' && password === '2026RyanTime') {
@@ -75,14 +74,12 @@ app.post('/netairy-secret-admin-999/login', (req, res) => {
   res.render('admin-login', { error: 'Invalid username or password' });
 });
 
-// Admin Logout
 app.get('/netairy-secret-admin-999/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/netairy-secret-admin-999/login');
   });
 });
 
-// Admin Dashboard - View All Profiles
 app.get('/netairy-secret-admin-999', requireAuth, async (req, res) => {
   try {
     const profiles = await Profile.find().sort({ createdAt: -1 });
@@ -93,7 +90,6 @@ app.get('/netairy-secret-admin-999', requireAuth, async (req, res) => {
   }
 });
 
-// Add / Edit Profile Form Route
 app.get('/netairy-secret-admin-999/edit/:slug?', requireAuth, async (req, res) => {
   try {
     const slug = req.params.slug;
@@ -108,23 +104,22 @@ app.get('/netairy-secret-admin-999/edit/:slug?', requireAuth, async (req, res) =
   }
 });
 
-// Save or Update Profile (POST)
+// Save or Update Profile
 app.post('/netairy-secret-admin-999/save', requireAuth, async (req, res) => {
   try {
-    const { originalSlug, slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github } = req.body;
+    const { originalSlug, slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, product1, product2, product3, instagram, linkedin, youtube } = req.body;
     
+    // Gallery array banayenge jo jo photo link bhara hoga usko utha kar
+    const gallery = [product1, product2, product3].filter(img => img && img.trim() !== "");
+
+    const updateData = {
+      slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, gallery, instagram, linkedin, youtube
+    };
+
     if (originalSlug && originalSlug !== slug) {
-      await Profile.findOneAndUpdate(
-        { slug: originalSlug },
-        { slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github },
-        { upsert: true, new: true }
-      );
+      await Profile.findOneAndUpdate({ slug: originalSlug }, updateData, { upsert: true, new: true });
     } else {
-      await Profile.findOneAndUpdate(
-        { slug },
-        { slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github },
-        { upsert: true, new: true }
-      );
+      await Profile.findOneAndUpdate({ slug }, updateData, { upsert: true, new: true });
     }
 
     res.redirect('/netairy-secret-admin-999');
@@ -134,7 +129,6 @@ app.post('/netairy-secret-admin-999/save', requireAuth, async (req, res) => {
   }
 });
 
-// Delete Profile Route
 app.get('/netairy-secret-admin-999/delete/:slug', requireAuth, async (req, res) => {
   try {
     await Profile.findOneAndDelete({ slug: req.params.slug });
@@ -145,7 +139,6 @@ app.get('/netairy-secret-admin-999/delete/:slug', requireAuth, async (req, res) 
   }
 });
 
-// Public Client Profile Page
 app.get('/:slug', async (req, res) => {
   try {
     const profile = await Profile.findOne({ slug: req.params.slug });
@@ -159,7 +152,6 @@ app.get('/:slug', async (req, res) => {
   }
 });
 
-// Server Listener
 app.listen(PORT, () => {
   console.log(`🚀 NetAiry NFC Server is running on port ${PORT}`);
 });
