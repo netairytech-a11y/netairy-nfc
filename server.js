@@ -1,41 +1,43 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB Connection (Render Environment variable se uthayega)
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://netairytech_db_user:JhK62hQrDHRjSqvu@cluster0.3n35kvz.mongodb.net/netairy_nfc?retryWrites=true&w=majority";
+// SQLite Database Connection
+const dbFile = path.join(__dirname, 'database.sqlite');
+const db = new sqlite3.Database(dbFile, (err) => {
+  if (err) {
+    console.error('Error opening database', err.message);
+  } else {
+    console.log('Connected to SQLite database.');
+  }
+});
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
-
-// Mongoose Schema & Model for Profiles
-const profileSchema = new mongoose.Schema({
-  slug: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  title: String,
-  company: String,
-  phone: String,
-  whatsapp: String,
-  email: String,
-  website: String,
-  address: String,
-  bio: String,
-  avatar: String,
-  banner: String,
-  facebook: String,
-  instagram: String,
-  linkedin: String,
-  twitter: String,
-  youtube: String,
-  github: String
-}, { timestamps: true });
-
-const Profile = mongoose.model('Profile', profileSchema);
+// Create Profiles Table if not exists
+db.run(`CREATE TABLE IF NOT EXISTS profiles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT UNIQUE,
+  name TEXT,
+  title TEXT,
+  company TEXT,
+  phone TEXT,
+  whatsapp TEXT,
+  email TEXT,
+  website TEXT,
+  address TEXT,
+  bio TEXT,
+  avatar TEXT,
+  banner TEXT,
+  facebook TEXT,
+  instagram TEXT,
+  linkedin TEXT,
+  twitter TEXT,
+  youtube TEXT,
+  github TEXT
+)`);
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -46,8 +48,7 @@ app.set('view engine', 'ejs');
 app.use(session({
   secret: 'netairy-nfc-secure-secret-key-999',
   resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false }
+  saveUninitialized: false
 }));
 
 // Admin Authentication Middleware
@@ -83,83 +84,85 @@ app.get('/netairy-secret-admin-999/logout', (req, res) => {
 });
 
 // Admin Dashboard - View All Profiles
-app.get('/netairy-secret-admin-999', requireAuth, async (req, res) => {
-  try {
-    const profiles = await Profile.find().sort({ createdAt: -1 });
-    res.render('admin-dashboard', { profiles });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
-  }
+app.get('/netairy-secret-admin-999', requireAuth, (req, res) => {
+  db.all(`SELECT * FROM profiles ORDER BY id DESC`, [], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Database Error");
+    }
+    res.render('admin-dashboard', { profiles: rows });
+  });
 });
 
 // Add / Edit Profile Form Route
-app.get('/netairy-secret-admin-999/edit/:slug?', requireAuth, async (req, res) => {
-  try {
-    const slug = req.params.slug;
-    let profile = null;
-    if (slug) {
-      profile = await Profile.findOne({ slug });
-    }
-    res.render('admin-edit', { profile });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+app.get('/netairy-secret-admin-999/edit/:slug?', requireAuth, (req, res) => {
+  const slug = req.params.slug;
+  if (!slug) {
+    return res.render('admin-edit', { profile: null });
   }
+  db.get(`SELECT * FROM profiles WHERE slug = ?`, [slug], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Database Error");
+    }
+    res.render('admin-edit', { profile: row });
+  });
 });
 
 // Save or Update Profile (POST)
-app.post('/netairy-secret-admin-999/save', requireAuth, async (req, res) => {
-  try {
-    const { originalSlug, slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github } = req.body;
-    
-    if (originalSlug && originalSlug !== slug) {
-      await Profile.findOneAndUpdate(
-        { slug: originalSlug },
-        { slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github },
-        { upsert: true, new: true }
-      );
-    } else {
-      await Profile.findOneAndUpdate(
-        { slug },
-        { slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github },
-        { upsert: true, new: true }
-      );
-    }
+app.post('/netairy-secret-admin-999/save', requireAuth, (req, res) => {
+  const { originalSlug, slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github } = req.body;
 
-    res.redirect('/netairy-secret-admin-999');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error saving profile: " + err.message);
+  if (originalSlug) {
+    // Update existing
+    const query = `UPDATE profiles SET slug=?, name=?, title=?, company=?, phone=?, whatsapp=?, email=?, website=?, address=?, bio=?, avatar=?, banner=?, facebook=?, instagram=?, linkedin=?, twitter=?, youtube=?, github=? WHERE slug=?`;
+    db.run(query, [slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github, originalSlug], (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Error updating profile");
+      }
+      res.redirect('/netairy-secret-admin-999');
+    });
+  } else {
+    // Insert new
+    const query = `INSERT INTO profiles (slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.run(query, [slug, name, title, company, phone, whatsapp, email, website, address, bio, avatar, banner, facebook, instagram, linkedin, twitter, youtube, github], (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Error saving profile (Slug might already exist)");
+      }
+      res.redirect('/netairy-secret-admin-999');
+    });
   }
 });
 
 // Delete Profile Route
-app.get('/netairy-secret-admin-999/delete/:slug', requireAuth, async (req, res) => {
-  try {
-    await Profile.findOneAndDelete({ slug: req.params.slug });
+app.get('/netairy-secret-admin-999/delete/:slug', requireAuth, (req, res) => {
+  db.run(`DELETE FROM profiles WHERE slug = ?`, [req.params.slug], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Error deleting profile");
+    }
     res.redirect('/netairy-secret-admin-999');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error deleting profile");
-  }
+  });
 });
 
 // Public Client Profile Page
-app.get('/:slug', async (req, res) => {
-  try {
-    const profile = await Profile.findOne({ slug: req.params.slug });
-    if (!profile) {
+app.get('/:slug', (req, res) => {
+  const slug = req.params.slug;
+  db.get(`SELECT * FROM profiles WHERE slug = ?`, [slug], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Server Error");
+    }
+    if (!row) {
       return res.status(404).send("Profile not found!");
     }
-    res.render('profile', { profile });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
-  }
+    res.render('profile', { profile: row });
+  });
 });
 
 // Server Listener
 app.listen(PORT, () => {
-  console.log(`🚀 NetAiry NFC Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
