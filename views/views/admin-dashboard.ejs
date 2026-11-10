@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - NetAiry Tech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8 bg-gray-800 p-4 rounded-xl border border-gray-700">
+      <h1 class="text-xl font-bold">NetAiry NFC - Admin Dashboard</h1>
+      <div class="space-x-4">
+        <a href="/netairy-secret-admin-999/edit" class="bg-green-600 px-4 py-2 rounded font-semibold hover:bg-green-500">+ Add New Card</a>
+        <a href="/netairy-secret-admin-999/logout" class="bg-red-600 px-4 py-2 rounded font-semibold hover:bg-red-500">Logout</a>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-700 text-gray-300 text-sm">
+            <th class="p-4">Name</th>
+            <th class="p-4">Slug / Link</th>
+            <th class="p-4">Company</th>
+            <th class="p-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+          <% if (profiles.length === 0) { %>
+            <tr><td colspan="4" class="p-6 text-center text-gray-400">No NFC profiles created yet.</td></tr>
+          <% } else { %>
+            <% profiles.forEach(profile => { %>
+              <tr class="hover:bg-gray-750">
+                <td class="p-4 font-medium"><%= profile.name %></td>
+                <td class="p-4"><a href="/<%= profile.slug %>" target="_blank" class="text-indigo-400 underline">/<%= profile.slug %></a></td>
+                <td class="p-4 text-gray-300"><%= profile.company || '-' %></td>
+                <td class="p-4 text-center space-x-2">
+                  <a href="/netairy-secret-admin-999/edit/<%= profile.slug %>" class="bg-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-500">Edit</a>
+                  <a href="/netairy-secret-admin-999/delete/<%= profile.slug %>" onclick="return confirm('Are you sure you want to delete this profile?')" class="bg-red-600 px-3 py-1 rounded text-sm hover:bg-red-500">Delete</a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
