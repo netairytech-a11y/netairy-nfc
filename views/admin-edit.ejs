@@ -81,7 +81,26 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-3 gap-4">
+      <!-- PRODUCT / SERVICE PHOTOS SECTION -->
+      <div class="border-t border-gray-700 pt-4 mt-4">
+        <h3 class="text-lg font-semibold text-indigo-400 mb-3">🛍️ Product / Service Photos (Image URLs)</h3>
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Product Photo 1</label>
+            <input type="text" name="product1" value="<%= profile && profile.gallery && profile.gallery[0] ? profile.gallery[0] : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://...">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Product Photo 2</label>
+            <input type="text" name="product2" value="<%= profile && profile.gallery && profile.gallery[1] ? profile.gallery[1] : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://...">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Product Photo 3</label>
+            <input type="text" name="product3" value="<%= profile && profile.gallery && profile.gallery[2] ? profile.gallery[2] : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://...">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 pt-2">
         <div>
           <label class="block text-sm text-gray-300 mb-1">Instagram URL</label>
           <input type="text" name="instagram" value="<%= profile ? profile.instagram : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white">
