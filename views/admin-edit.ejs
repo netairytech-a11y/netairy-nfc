@@ -100,10 +100,14 @@
         </div>
       </div>
 
-      <!-- SOCIAL MEDIA LINKS SECTION -->
+      <!-- SOCIAL MEDIA & GOOGLE LINKS SECTION -->
       <div class="border-t border-gray-700 pt-4 mt-4">
-        <h3 class="text-lg font-semibold text-indigo-400 mb-3">🌐 Social Media Links</h3>
+        <h3 class="text-lg font-semibold text-indigo-400 mb-3">🌐 Social Media & Google Links</h3>
         <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Google Review / Business URL</label>
+            <input type="text" name="google" value="<%= profile ? profile.google : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://g.page/...">
+          </div>
           <div>
             <label class="block text-xs text-gray-300 mb-1">Instagram URL</label>
             <input type="text" name="instagram" value="<%= profile ? profile.instagram : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://instagram.com/...">
@@ -119,6 +123,10 @@
           <div>
             <label class="block text-xs text-gray-300 mb-1">YouTube URL</label>
             <input type="text" name="youtube" value="<%= profile ? profile.youtube : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://youtube.com/...">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Twitter / X URL</label>
+            <input type="text" name="twitter" value="<%= profile ? profile.twitter : '' %>" class="w-full p-2 bg-gray-700 border border-gray-650 rounded text-white text-sm" placeholder="https://twitter.com/...">
           </div>
         </div>
       </div>
