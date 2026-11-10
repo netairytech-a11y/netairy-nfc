@@ -10,7 +10,7 @@
   <div class="max-w-md w-full bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border border-gray-800 mb-6">
     
     <!-- Banner Image -->
-    <div class="h-36 bg-gradient-to-r from-indigo-600 to-purple-600 bg-cover bg-center relative" style="background-image: url('<%= profile.banner || 'https://images.unsplash.com/photo-1557683316-973673baf926' %>');"></div>
+    <div class="h-36 bg-gradient-to-r from-indigo-600 to-purple-600 bg-cover bg-center" style="background-image: url('<%= profile.banner || 'https://images.unsplash.com/photo-1557683316-973673baf926' %>');"></div>
     
     <div class="px-6 pb-8 text-center relative">
       <!-- Avatar Image -->
@@ -36,7 +36,7 @@
         </p>
       <% } %>
 
-      <!-- Contact & Main Action Buttons (With Hover Color Effects) -->
+      <!-- Contact & Main Action Buttons (Proper sized & uniform) -->
       <div class="mt-6 space-y-3">
         <% if (profile.phone && profile.phone.trim() !== "") { %>
           <a href="tel:<%= profile.phone %>" class="flex items-center justify-center gap-2 w-full bg-indigo-600 text-white py-3 rounded-xl font-medium shadow-lg shadow-indigo-600/30 hover:bg-indigo-500 hover:scale-[1.02] transition-all duration-300">
@@ -63,7 +63,7 @@
         <% } %>
       </div>
 
-      <!-- Social Media Buttons (Only shows if link exists, with color effects) -->
+      <!-- Social Media Buttons (Only shows if link exists) -->
       <% if ((profile.instagram && profile.instagram.trim() !== "") || (profile.facebook && profile.facebook.trim() !== "") || (profile.linkedin && profile.linkedin.trim() !== "") || (profile.youtube && profile.youtube.trim() !== "")) { %>
         <div class="mt-6 pt-4 border-t border-gray-800 flex justify-center gap-3 flex-wrap">
           <% if (profile.instagram && profile.instagram.trim() !== "") { %>
@@ -81,7 +81,7 @@
         </div>
       <% } %>
 
-      <!-- PRODUCT / SERVICE GALLERY (Only shows if photos added) -->
+      <!-- PRODUCT / SERVICE GALLERY -->
       <% if (profile.gallery && profile.gallery.length > 0) { %>
         <div class="mt-8 pt-6 border-t border-gray-800 text-left">
           <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3 text-center">✨ Featured Products & Services</h3>
