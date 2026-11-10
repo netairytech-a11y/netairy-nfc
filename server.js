@@ -28,10 +28,12 @@ const profileSchema = new mongoose.Schema({
   avatar: String,
   banner: String,
   gallery: [String],
+  google: String,
   instagram: String,
   facebook: String,
   linkedin: String,
-  youtube: String
+  youtube: String,
+  twitter: String
 }, { timestamps: true });
 
 const Profile = mongoose.model('Profile', profileSchema);
@@ -108,10 +110,9 @@ app.post('/netairy-secret-admin-999/save', requireAuth, async (req, res) => {
       originalSlug, slug, name, title, company, phone, whatsapp, 
       email, website, address, bio, avatar, banner, 
       product1, product2, product3, 
-      instagram, facebook, linkedin, youtube 
+      google, instagram, facebook, linkedin, youtube, twitter 
     } = req.body;
     
-    // Helper to ensure values are strings even if duplicate fields sent arrays
     const cleanStr = (val) => Array.isArray(val) ? (val[0] || "") : (val || "");
 
     const gallery = [product1, product2, product3].filter(img => img && img.trim() !== "");
@@ -130,10 +131,12 @@ app.post('/netairy-secret-admin-999/save', requireAuth, async (req, res) => {
       avatar: cleanStr(avatar), 
       banner: cleanStr(banner), 
       gallery, 
+      google: cleanStr(google),
       instagram: cleanStr(instagram), 
       facebook: cleanStr(facebook), 
       linkedin: cleanStr(linkedin), 
-      youtube: cleanStr(youtube)
+      youtube: cleanStr(youtube),
+      twitter: cleanStr(twitter)
     };
 
     const targetSlug = cleanStr(slug);
