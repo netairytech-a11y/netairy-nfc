@@ -65,7 +65,7 @@ app.get('/netairy-secret-admin-999/login', (req, res) => {
 
 app.post('/netairy-secret-admin-999/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === 'netairy123') {
+  if (username === 'Ryan' && password === '2026RyanTime') {
     req.session.isAdmin = true;
     return res.redirect('/netairy-secret-admin-999');
   }
